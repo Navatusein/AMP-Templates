@@ -19,5 +19,6 @@ if ($LASTEXITCODE -ne 0) { Write-Output 'gtnh-daily-updater init failed. Abortin
 };
 $UpdateArgs = @('update', '--instance-dir', $D, '--cache-dir', (Join-Path '{{$FullRootDir}}' 'updater\cache'), '--concurrency', '{{Concurrency}}');
 if ('{{ModVersions}}' -eq 'latest') { $UpdateArgs += '--latest' };
+if ('{{DailyBuildTag}}' -ne '') { Write-Output 'Updating to daily build {{DailyBuildTag}}'; $UpdateArgs += @('--build', '{{DailyBuildTag}}') };
 & $U @UpdateArgs;
 if ($LASTEXITCODE -ne 0) { Write-Output 'gtnh-daily-updater update failed. Aborting'; exit 1 };

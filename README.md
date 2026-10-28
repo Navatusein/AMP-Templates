@@ -52,8 +52,12 @@ never replaced under a running server.
 
 - **git is required** for the config merge. In Docker it is installed via `ExtraContainerPackages`;
   on a bare Linux host install `git`, `unzip`, `wget` and `jq`; on Windows install Git for Windows.
-- **Pack Mode**, **Daily Build Tag**, **Initial Config Version** and **Base Server Pack URL** are used
-  only on the first update. To re-initialize, delete `gtnh/server/.gtnh-daily-updater.json`.
+- **Daily Build Tag** pins the server to a build: it is installed on a fresh install and every update
+  goes to exactly that build (`gtnh-daily-updater update --build <tag>`). Clear it to follow the latest
+  daily again. It needs the updater fork set in **Updater Repository** (default
+  `Navatusein/GTNH-Daily-Updater`) and a daily-mode instance. Moving to an older build downgrades
+  mods only; pack configs stay on the newer version.
+- **Pack Mode**, **Initial Config Version** and **Base Server Pack URL** are used only on the first update. To re-initialize, delete `gtnh/server/.gtnh-daily-updater.json`.
 - The config version of the installed pack is saved to `gtnh/initial-config.txt` and used when
   **Initial Config Version** is empty.
 - See your config edits relative to the pack: run

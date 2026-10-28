@@ -13,4 +13,5 @@ echo "Initializing gtnh-daily-updater (config version $Cfg, mode {{PackMode}})";
 fi;
 Extra=();
 if [[ "{{ModVersions}}" == "latest" ]]; then Extra+=(--latest); fi;
+if [[ -n "{{DailyBuildTag}}" ]]; then echo "Updating to daily build {{DailyBuildTag}}"; Extra+=(--build "{{DailyBuildTag}}"); fi;
 "$U" update --instance-dir "$D" --cache-dir "{{$FullRootDir}}updater/cache" --concurrency "{{Concurrency}}" "${Extra[@]}" || { echo "gtnh-daily-updater update failed. Aborting"; exit 1; };
