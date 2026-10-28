@@ -60,6 +60,11 @@ never replaced under a running server.
 - **Pack Mode**, **Initial Config Version** and **Base Server Pack URL** are used only on the first update. To re-initialize, delete `gtnh/server/.gtnh-daily-updater.json`.
 - The config version of the installed pack is saved to `gtnh/initial-config.txt` and used when
   **Initial Config Version** is empty.
+- Every **Update** writes a log to `gtnh/updater/logs/update-<date>_<time>.log`: the full updater
+  output with every mod version, changed config files and errors.
+- Config history lives in the git repo `gtnh/server/.gtnh-configs`: each update adds a
+  `Snapshot player changes` commit (your edits) and an `Update configs to <version>` merge.
+  `git -C .gtnh-configs diff <snapshot> <merge> -- config/<file>` shows what an update changed in a file.
 - See your config edits relative to the pack: run
   `gtnh/updater/gtnh-daily-updater config diff --instance-dir gtnh/server` on the host.
 - The updater stamps the pack version into the MOTD while it starts with `GT:New Horizons`;
