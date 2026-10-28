@@ -1,0 +1,77 @@
+[
+    {
+        "UpdateStageName": "Server Directory Creation",
+        "UpdateSourcePlatform": "All",
+        "UpdateSource": "CreateDirectory",
+        "UpdateSourceArgs": "{{$FullBaseDir}}",
+        "SkipOnFailure": false
+    },
+    {
+        "UpdateStageName": "Java Download",
+        "UpdateSourcePlatform": "Linux",
+        "UpdateSource": "Executable",
+        "UpdateSourceData": "/bin/bash",
+        "UpdateSourceArgs": "-c \"for Tool in wget jq tar; do if ! command -v \\\"$Tool\\\" >/dev/null 2>&1; then echo \\\"$Tool is required but was not found. Aborting\\\"; exit 1; fi; done; cd \\\"{{$FullRootDir}}\\\" || exit 1; case \\\"$(uname -m)\\\" in x86_64) Arch=x64;; aarch64) Arch=aarch64;; *) echo \\\"Unsupported architecture $(uname -m)\\\"; exit 1;; esac; Installed=\\\"\\\"; if [[ -x java/bin/java ]]; then Installed=$(java/bin/java --version 2>&1 | grep -oE \\\"Temurin-[^ ]+\\\" | head -n1 | cut -d- -f2); fi; Latest=$(wget -qO- \\\"https://api.adoptium.net/v3/assets/latest/{{SpecificInstanceJavaVersion}}/hotspot?architecture=$Arch&image_type=jre&os=linux&vendor=eclipse\\\" | jq -r \\\".[0].version.openjdk_version\\\" | sed \\\"s/-LTS$//\\\"); if [[ -z \\\"$Latest\\\" || \\\"$Latest\\\" == \\\"null\\\" ]]; then echo \\\"Could not get the latest Eclipse Temurin {{SpecificInstanceJavaVersion}} version. Aborting\\\"; exit 1; fi; if [[ \\\"$Installed\\\" == \\\"$Latest\\\" ]]; then echo \\\"Eclipse Temurin Java $Latest already installed. Skipping\\\"; exit 0; fi; rm -f java.tar.gz; wget -qO java.tar.gz \\\"https://api.adoptium.net/v3/binary/latest/{{SpecificInstanceJavaVersion}}/ga/linux/$Arch/jre/hotspot/normal/eclipse\\\" || { echo \\\"Download failed from the Eclipse Temurin CDN. Aborting\\\"; exit 1; }; mkdir -p java && rm -rf java/* && tar -xzf java.tar.gz -C java --strip-components=1 && rm -f java.tar.gz && chmod +x java/bin/java && echo \\\"Eclipse Temurin Java $Latest installed\\\";\"",
+        "UpdateSourceConditionSetting": "JavaVersion",
+        "UpdateSourceConditionValue": "{{Windows:java\\bin\\java.exe}}{{Linux:java/bin/java}}",
+        "SkipOnFailure": false
+    },
+    {
+        "UpdateStageName": "Java Download",
+        "UpdateSourcePlatform": "Windows",
+        "UpdateSource": "Executable",
+        "UpdateSourceData": "powershell.exe",
+        "UpdateSourceArgs": "-NoProfile -ExecutionPolicy Bypass -Command \"$ProgressPreference = 'SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Set-Location -Path '{{$FullRootDir}}'; $Installed = ''; if (Test-Path 'java/bin/java.exe') { $Out = (& 'java/bin/java.exe' --version 2>&1) -join ' '; if ($Out -match 'Temurin-(\\S+)') { $Installed = $Matches[1] } }; try { $Latest = ((Invoke-RestMethod -UseBasicParsing -Uri 'https://api.adoptium.net/v3/assets/latest/{{SpecificInstanceJavaVersion}}/hotspot?architecture=x64&image_type=jre&os=windows&vendor=eclipse' -ErrorAction Stop)[0].version.openjdk_version) -replace '-LTS$', '' } catch { $Latest = '' }; if ([string]::IsNullOrEmpty($Latest)) { Write-Output 'Could not get the latest Eclipse Temurin {{SpecificInstanceJavaVersion}} version. Aborting'; exit 1 }; if ($Installed -eq $Latest) { Write-Output ('Eclipse Temurin Java ' + $Latest + ' already installed. Skipping'); exit 0 }; Remove-Item java.zip -Force -ErrorAction SilentlyContinue; try { Invoke-WebRequest -UseBasicParsing -Uri 'https://api.adoptium.net/v3/binary/latest/{{SpecificInstanceJavaVersion}}/ga/windows/x64/jre/hotspot/normal/eclipse' -OutFile java.zip -ErrorAction Stop } catch { Write-Output 'Download failed from the Eclipse Temurin CDN. Aborting'; exit 1 }; Remove-Item java-extract -Recurse -Force -ErrorAction SilentlyContinue; Expand-Archive -Path java.zip -DestinationPath java-extract -Force; Remove-Item java.zip -Force -ErrorAction SilentlyContinue; Remove-Item java -Recurse -Force -ErrorAction SilentlyContinue; Get-ChildItem -Path java-extract -Directory | Select-Object -First 1 | Move-Item -Destination java; Remove-Item java-extract -Recurse -Force -ErrorAction SilentlyContinue; Write-Output ('Eclipse Temurin Java ' + $Latest + ' installed');\"",
+        "UpdateSourceConditionSetting": "JavaVersion",
+        "UpdateSourceConditionValue": "{{Windows:java\\bin\\java.exe}}{{Linux:java/bin/java}}",
+        "SkipOnFailure": false
+    },
+    {
+        "UpdateStageName": "gtnh-daily-updater Download",
+        "UpdateSourcePlatform": "Linux",
+        "UpdateSource": "Executable",
+        "UpdateSourceData": "/bin/bash",
+        "UpdateSourceArgs": "-c \"for Tool in wget jq unzip; do if ! command -v \\\"$Tool\\\" >/dev/null 2>&1; then echo \\\"$Tool is required but was not found. Aborting\\\"; exit 1; fi; done; Repo=\\\"{{UpdaterRepo}}\\\"; Want=\\\"{{UpdaterVersion}}\\\"; Dir=\\\"{{$FullRootDir}}updater\\\"; mkdir -p \\\"$Dir\\\"; case \\\"$(uname -m)\\\" in x86_64) Arch=amd64;; aarch64) Arch=arm64;; *) echo \\\"Unsupported architecture $(uname -m)\\\"; exit 1;; esac; Auth=(); if [[ -n \\\"{{GithubToken}}\\\" ]]; then Auth=(--header \\\"Authorization: Bearer {{GithubToken}}\\\"); fi; if [[ -z \\\"$Want\\\" ]]; then Api=\\\"https://api.github.com/repos/$Repo/releases/latest\\\"; else Api=\\\"https://api.github.com/repos/$Repo/releases/tags/$Want\\\"; fi; Json=$(wget -qO- \\\"${Auth[@]}\\\" \\\"$Api\\\") || { echo \\\"Failed to query GitHub releases of $Repo. Aborting\\\"; exit 1; }; Tag=$(echo \\\"$Json\\\" | jq -r \\\".tag_name // empty\\\"); if [[ -z \\\"$Tag\\\" ]]; then echo \\\"No release found in $Repo. Aborting\\\"; exit 1; fi; Url=$(echo \\\"$Json\\\" | jq -r --arg suffix \\\"-linux-$Arch.zip\\\" '.assets[] | select(.name | endswith($suffix)) | .browser_download_url' | head -n1); Installed=\\\"\\\"; if [[ -x \\\"$Dir/gtnh-daily-updater\\\" ]]; then Installed=$(\\\"$Dir/gtnh-daily-updater\\\" --version 2>/dev/null | grep -oE \\\"version [^ ]+\\\" | head -n1 | cut -d\\\" \\\" -f2); fi; if [[ \\\"$Installed\\\" == \\\"$Tag\\\" ]]; then echo \\\"gtnh-daily-updater $Tag already installed. Skipping\\\"; exit 0; fi; if [[ -z \\\"$Url\\\" ]]; then echo \\\"Release $Tag of $Repo has no linux-$Arch build. Aborting\\\"; exit 1; fi; rm -f \\\"$Dir/updater.zip\\\"; wget -qO \\\"$Dir/updater.zip\\\" \\\"$Url\\\" || { echo \\\"gtnh-daily-updater download failed. Aborting\\\"; exit 1; }; unzip -oq \\\"$Dir/updater.zip\\\" -d \\\"$Dir\\\" || { echo \\\"Failed to extract gtnh-daily-updater (is unzip installed?). Aborting\\\"; exit 1; }; rm -f \\\"$Dir/updater.zip\\\"; chmod +x \\\"$Dir/gtnh-daily-updater\\\"; echo \\\"gtnh-daily-updater $Tag installed\\\";\"",
+        "SkipOnFailure": false
+    },
+    {
+        "UpdateStageName": "gtnh-daily-updater Download",
+        "UpdateSourcePlatform": "Windows",
+        "UpdateSource": "Executable",
+        "UpdateSourceData": "powershell.exe",
+        "UpdateSourceArgs": "-NoProfile -ExecutionPolicy Bypass -Command \"$ProgressPreference = 'SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $Repo = '{{UpdaterRepo}}'; $Want = '{{UpdaterVersion}}'; $Token = '{{GithubToken}}'; $Dir = Join-Path '{{$FullRootDir}}' 'updater'; New-Item -ItemType Directory -Force -Path $Dir | Out-Null; $Headers = @{ 'User-Agent' = 'AMP-gtnh-daily' }; if ($Token -ne '') { $Headers['Authorization'] = 'Bearer ' + $Token }; if ($Want -eq '') { $Api = 'https://api.github.com/repos/' + $Repo + '/releases/latest' } else { $Api = 'https://api.github.com/repos/' + $Repo + '/releases/tags/' + $Want }; try { $Release = Invoke-RestMethod -UseBasicParsing -Headers $Headers -Uri $Api -ErrorAction Stop } catch { Write-Output ('Failed to query GitHub releases of ' + $Repo + '. Aborting'); exit 1 }; $Tag = $Release.tag_name; if ([string]::IsNullOrEmpty($Tag)) { Write-Output ('No release found in ' + $Repo + '. Aborting'); exit 1 }; $Exe = Join-Path $Dir 'gtnh-daily-updater.exe'; $Installed = ''; if (Test-Path $Exe) { $Out = (& $Exe --version 2>$null) -join ' '; if ($Out -match 'version\\s+(\\S+)') { $Installed = $Matches[1] } }; if ($Installed -eq $Tag) { Write-Output ('gtnh-daily-updater ' + $Tag + ' already installed. Skipping'); exit 0 }; $Asset = $Release.assets | Where-Object { $_.name -like '*-windows-amd64.zip' } | Select-Object -First 1; if ($null -eq $Asset) { Write-Output ('Release ' + $Tag + ' of ' + $Repo + ' has no windows-amd64 build. Aborting'); exit 1 }; $Zip = Join-Path $Dir 'updater.zip'; try { Invoke-WebRequest -UseBasicParsing -Uri $Asset.browser_download_url -OutFile $Zip -ErrorAction Stop } catch { Write-Output 'gtnh-daily-updater download failed. Aborting'; exit 1 }; Expand-Archive -Path $Zip -DestinationPath $Dir -Force; Remove-Item $Zip -Force -ErrorAction SilentlyContinue; Write-Output ('gtnh-daily-updater ' + $Tag + ' installed');\"",
+        "SkipOnFailure": false
+    },
+    {
+        "UpdateStageName": "GTNH Server Pack Install",
+        "UpdateSourcePlatform": "Linux",
+        "UpdateSource": "Executable",
+        "UpdateSourceData": "/bin/bash",
+        "UpdateSourceArgs": "-c \"for Tool in wget unzip; do if ! command -v \\\"$Tool\\\" >/dev/null 2>&1; then echo \\\"$Tool is required but was not found. Aborting\\\"; exit 1; fi; done; cd \\\"{{$FullBaseDir}}\\\" || exit 1; if [[ -f lwjgl3ify-forgePatches.jar ]]; then echo \\\"Server files already present. Skipping base pack install\\\"; exit 0; fi; Ver=\\\"{{InitialConfigVersion}}\\\"; Url=\\\"{{BasePackUrl}}\\\"; if [[ -z \\\"$Url\\\" ]]; then if [[ \\\"$Ver\\\" =~ ^[0-9]+[.][0-9]+[.][0-9]+$ ]]; then Url=\\\"https://downloads.gtnewhorizons.com/ServerPacks/GT_New_Horizons_${Ver}_Server_Java_17-25.zip\\\"; else echo \\\"Initial Config Version $Ver is not a stable release, so no server pack can be downloaded for it. Set Base Server Pack URL or upload the server files. Aborting\\\"; exit 1; fi; fi; echo \\\"Downloading GTNH server pack from $Url\\\"; rm -f base-pack.zip; wget -qO base-pack.zip \\\"$Url\\\" || { echo \\\"Server pack download failed. Aborting\\\"; exit 1; }; unzip -oq base-pack.zip -d . || { echo \\\"Failed to extract server pack (is unzip installed?). Aborting\\\"; exit 1; }; rm -f base-pack.zip; echo \\\"GTNH server pack installed\\\";\"",
+        "SkipOnFailure": false
+    },
+    {
+        "UpdateStageName": "GTNH Server Pack Install",
+        "UpdateSourcePlatform": "Windows",
+        "UpdateSource": "Executable",
+        "UpdateSourceData": "powershell.exe",
+        "UpdateSourceArgs": "-NoProfile -ExecutionPolicy Bypass -Command \"$ProgressPreference = 'SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Set-Location -Path '{{$FullBaseDir}}'; if (Test-Path 'lwjgl3ify-forgePatches.jar') { Write-Output 'Server files already present. Skipping base pack install'; exit 0 }; $Ver = '{{InitialConfigVersion}}'; $Url = '{{BasePackUrl}}'; if ($Url -eq '') { if ($Ver -match '^\\d+\\.\\d+\\.\\d+$') { $Url = 'https://downloads.gtnewhorizons.com/ServerPacks/GT_New_Horizons_' + $Ver + '_Server_Java_17-25.zip' } else { Write-Output ('Initial Config Version ' + $Ver + ' is not a stable release, so no server pack can be downloaded for it. Set Base Server Pack URL or upload the server files. Aborting'); exit 1 }; }; Write-Output ('Downloading GTNH server pack from ' + $Url); Remove-Item base-pack.zip -Force -ErrorAction SilentlyContinue; try { Invoke-WebRequest -UseBasicParsing -Uri $Url -OutFile base-pack.zip -ErrorAction Stop } catch { Write-Output 'Server pack download failed. Aborting'; exit 1 }; Expand-Archive -Path base-pack.zip -DestinationPath . -Force; Remove-Item base-pack.zip -Force -ErrorAction SilentlyContinue; Write-Output 'GTNH server pack installed';\"",
+        "SkipOnFailure": false
+    },
+    {
+        "UpdateStageName": "GTNH Pack Update",
+        "UpdateSourcePlatform": "Linux",
+        "UpdateSource": "Executable",
+        "UpdateSourceData": "/bin/bash",
+        "UpdateSourceArgs": "-c \"U=\\\"{{$FullRootDir}}updater/gtnh-daily-updater\\\"; D=\\\"{{$FullBaseDir}}\\\"; if ! command -v git >/dev/null 2>&1; then echo \\\"git is required to merge pack config changes but was not found. Aborting\\\"; exit 1; fi; if [[ ! -x \\\"$U\\\" ]]; then echo \\\"gtnh-daily-updater is missing. Aborting\\\"; exit 1; fi; export GITHUB_TOKEN=\\\"{{GithubToken}}\\\"; if [[ ! -f \\\"${D}.gtnh-daily-updater.json\\\" ]]; then echo \\\"Initializing gtnh-daily-updater (config version {{InitialConfigVersion}}, mode {{PackMode}})\\\"; \\\"$U\\\" init --instance-dir \\\"$D\\\" --side server --mode \\\"{{PackMode}}\\\" --config \\\"{{InitialConfigVersion}}\\\" || { echo \\\"gtnh-daily-updater init failed. Aborting\\\"; exit 1; }; fi; Extra=(); if [[ \\\"{{ModVersions}}\\\" == \\\"latest\\\" ]]; then Extra+=(--latest); fi; \\\"$U\\\" update --instance-dir \\\"$D\\\" --cache-dir \\\"{{$FullRootDir}}updater/cache\\\" --concurrency \\\"{{Concurrency}}\\\" \\\"${Extra[@]}\\\" || { echo \\\"gtnh-daily-updater update failed. Aborting\\\"; exit 1; };\"",
+        "SkipOnFailure": false
+    },
+    {
+        "UpdateStageName": "GTNH Pack Update",
+        "UpdateSourcePlatform": "Windows",
+        "UpdateSource": "Executable",
+        "UpdateSourceData": "powershell.exe",
+        "UpdateSourceArgs": "-NoProfile -ExecutionPolicy Bypass -Command \"$U = Join-Path '{{$FullRootDir}}' 'updater\\gtnh-daily-updater.exe'; $D = ('{{$FullBaseDir}}').TrimEnd('\\', '/'); if ($null -eq (Get-Command git -ErrorAction SilentlyContinue)) { Write-Output 'git is required to merge pack config changes but was not found. Install Git for Windows. Aborting'; exit 1 }; if (-not (Test-Path $U)) { Write-Output 'gtnh-daily-updater is missing. Aborting'; exit 1 }; $env:GITHUB_TOKEN = '{{GithubToken}}'; $env:GIT_CONFIG_COUNT = '1'; $env:GIT_CONFIG_KEY_0 = 'core.longpaths'; $env:GIT_CONFIG_VALUE_0 = 'true'; if (-not (Test-Path (Join-Path $D '.gtnh-daily-updater.json'))) { Write-Output 'Initializing gtnh-daily-updater (config version {{InitialConfigVersion}}, mode {{PackMode}})'; & $U init --instance-dir $D --side server --mode '{{PackMode}}' --config '{{InitialConfigVersion}}'; if ($LASTEXITCODE -ne 0) { Write-Output 'gtnh-daily-updater init failed. Aborting'; exit 1 }; }; $UpdateArgs = @('update', '--instance-dir', $D, '--cache-dir', (Join-Path '{{$FullRootDir}}' 'updater\\cache'), '--concurrency', '{{Concurrency}}'); if ('{{ModVersions}}' -eq 'latest') { $UpdateArgs += '--latest' }; & $U @UpdateArgs; if ($LASTEXITCODE -ne 0) { Write-Output 'gtnh-daily-updater update failed. Aborting'; exit 1 };\"",
+        "SkipOnFailure": false
+    }
+]

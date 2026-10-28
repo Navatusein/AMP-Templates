@@ -1,0 +1,45 @@
+[
+    {
+        "ConfigFile": "server.properties",
+        "ConfigType": "kvp",
+        "ConfigFormat": "{0}{1}",
+        "Importable": true,
+        "Subsections": [
+            {
+                "Heading": "$root",
+                "SettingMappings": {
+                    "server-port=": "$ServerPort",
+                    "server-ip=": "$ApplicationIPBinding",
+                    "max-players=": "$MaxUsers",
+                    "level-name=": "level-name",
+                    "level-seed=": "level-seed",
+                    "level-type=": "level-type",
+                    "difficulty=": "difficulty",
+                    "gamemode=": "gamemode",
+                    "pvp=": "pvp",
+                    "white-list=": "white-list",
+                    "online-mode=": "online-mode",
+                    "allow-flight=": "allow-flight",
+                    "view-distance=": "view-distance",
+                    "spawn-protection=": "spawn-protection",
+                    "enable-command-block=": "enable-command-block",
+                    "": "UserSettings"
+                }
+            }
+        ]
+    },
+    {
+        "ConfigFile": "eula.txt",
+        "ConfigType": "kvp",
+        "ConfigFormat": "{0}{1}",
+        "Importable": false,
+        "Subsections": [
+            {
+                "Heading": "$root",
+                "SettingMappings": {
+                    "eula=": "AcceptEULA"
+                }
+            }
+        ]
+    }
+]
