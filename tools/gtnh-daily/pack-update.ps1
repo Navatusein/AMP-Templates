@@ -9,8 +9,12 @@ $env:GIT_CONFIG_COUNT = '1';
 $env:GIT_CONFIG_KEY_0 = 'core.longpaths';
 $env:GIT_CONFIG_VALUE_0 = 'true';
 if (-not (Test-Path (Join-Path $D '.gtnh-daily-updater.json'))) {
-Write-Output 'Initializing gtnh-daily-updater (config version {{InitialConfigVersion}}, mode {{PackMode}})';
-& $U init --instance-dir $D --side server --mode '{{PackMode}}' --config '{{InitialConfigVersion}}';
+$Cfg = '{{InitialConfigVersion}}';
+$CfgFile = Join-Path '{{$FullRootDir}}' 'initial-config.txt';
+if ($Cfg -eq '' -and (Test-Path $CfgFile)) { $Cfg = (Get-Content -Raw $CfgFile).Trim() };
+if ($Cfg -eq '') { Write-Output 'Config version of the installed server is unknown. Set Initial Config Version to the exact config version of the uploaded server. Aborting'; exit 1 };
+Write-Output ('Initializing gtnh-daily-updater (config version ' + $Cfg + ', mode {{PackMode}})');
+& $U init --instance-dir $D --side server --mode '{{PackMode}}' --config $Cfg;
 if ($LASTEXITCODE -ne 0) { Write-Output 'gtnh-daily-updater init failed. Aborting'; exit 1 };
 };
 $UpdateArgs = @('update', '--instance-dir', $D, '--cache-dir', (Join-Path '{{$FullRootDir}}' 'updater\cache'), '--concurrency', '{{Concurrency}}');

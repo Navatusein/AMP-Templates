@@ -24,7 +24,7 @@ What the **Update** button does:
 |---|---|---|
 | Java Download | Java Version = *Specific instance version* (default) | Installs Eclipse Temurin JRE into `gtnh/java` |
 | gtnh-daily-updater Download | every update | Installs or refreshes the updater in `gtnh/updater` from GitHub Releases |
-| GTNH Server Pack Install | first update only (no `lwjgl3ify-forgePatches.jar` yet) | Downloads and unpacks the stable server pack for *Initial Config Version* |
+| GTNH Server Pack Install | first update only (no `lwjgl3ify-forgePatches.jar` yet) | Downloads and unpacks a daily build from [GTNH-Daily-Builds](https://github.com/GTNewHorizons/GTNH-Daily-Builds/releases) (or the pack chosen by *Initial Config Version* / *Base Server Pack URL*) |
 | GTNH Pack Update | every update | `init` once, then `gtnh-daily-updater update` |
 
 AMP stops the server before updating and the updater only runs then, so mods and configs are
@@ -33,8 +33,11 @@ never replaced under a running server.
 #### Fresh install
 
 1. Create the instance, tick **Accept Minecraft EULA**, set memory (6 GB + 0.5–1 GB per extra player).
-2. Leave **Initial Config Version** at the latest stable (e.g. `2.8.4`) and press **Update**.
-   The stable server pack is installed and immediately updated to the latest daily.
+2. Press **Update**. With **Initial Config Version** and **Base Server Pack URL** empty (default)
+   the latest daily server pack from GTNH-Daily-Builds is installed; its config version is read
+   from the build manifest. To start from a specific daily, set **Daily Build Tag**
+   (e.g. `daily-2026-10-27+803`) before the first update.
+   To start from a stable release instead, set **Initial Config Version** to it (e.g. `2.8.4`).
 3. Start the server. Add players with `whitelist add <name>` (whitelist is on by default).
 
 #### Moving an existing server into AMP
@@ -49,8 +52,10 @@ never replaced under a running server.
 
 - **git is required** for the config merge. In Docker it is installed via `ExtraContainerPackages`;
   on a bare Linux host install `git`, `unzip`, `wget` and `jq`; on Windows install Git for Windows.
-- **Pack Mode**, **Initial Config Version** and **Base Server Pack URL** are used only on the first
-  update. To re-initialize, delete `gtnh/server/.gtnh-daily-updater.json`.
+- **Pack Mode**, **Daily Build Tag**, **Initial Config Version** and **Base Server Pack URL** are used
+  only on the first update. To re-initialize, delete `gtnh/server/.gtnh-daily-updater.json`.
+- The config version of the installed pack is saved to `gtnh/initial-config.txt` and used when
+  **Initial Config Version** is empty.
 - See your config edits relative to the pack: run
   `gtnh/updater/gtnh-daily-updater config diff --instance-dir gtnh/server` on the host.
 - The updater stamps the pack version into the MOTD while it starts with `GT:New Horizons`;
