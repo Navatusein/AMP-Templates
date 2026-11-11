@@ -23,6 +23,11 @@
                     "view-distance=": "view-distance",
                     "spawn-protection=": "spawn-protection",
                     "enable-command-block=": "enable-command-block",
+                    "server-name=": "server-name",
+                    "force-gamemode=": "force-gamemode",
+                    "spawn-animals=": "spawn-animals",
+                    "spawn-npcs=": "spawn-npcs",
+                    "spawn-monsters=": "spawn-monsters",
                     "": "UserSettings"
                 }
             }

@@ -16,6 +16,19 @@
         }
     },
     {
+        "DisplayName": "Server Name",
+        "Category": "GT New Horizons:stadia_controller",
+        "Subcategory": "Server:dns:1",
+        "Description": "Server name written to server.properties (server-name). Some mods use it, for example in messages and maps",
+        "Keywords": "server-name",
+        "FieldName": "server-name",
+        "InputType": "text",
+        "ParamFieldName": "server-name",
+        "IncludeInCommandLine": false,
+        "DefaultValue": "",
+        "EnumValues": {}
+    },
+    {
         "DisplayName": "Player Limit",
         "Category": "GT New Horizons:stadia_controller",
         "Subcategory": "Server:dns:1",
@@ -101,7 +114,7 @@
         "InputType": "text",
         "ParamFieldName": "level-name",
         "IncludeInCommandLine": false,
-        "DefaultValue": "World",
+        "DefaultValue": "world",
         "EnumValues": {}
     },
     {
@@ -171,6 +184,22 @@
         }
     },
     {
+        "DisplayName": "Force Game Mode",
+        "Category": "GT New Horizons:stadia_controller",
+        "Subcategory": "Gameplay:joystick:2",
+        "Description": "Put players into the default game mode every time they join",
+        "Keywords": "force-gamemode",
+        "FieldName": "force-gamemode",
+        "InputType": "checkbox",
+        "ParamFieldName": "force-gamemode",
+        "IncludeInCommandLine": false,
+        "DefaultValue": "true",
+        "EnumValues": {
+            "False": "false",
+            "True": "true"
+        }
+    },
+    {
         "DisplayName": "Enable PvP",
         "Category": "GT New Horizons:stadia_controller",
         "Subcategory": "Gameplay:joystick:2",
@@ -203,7 +232,55 @@
         }
     },
     {
-        "DisplayName": "Spawn Protection",
+        "DisplayName": "Spawn Animals",
+        "Category": "GT New Horizons:stadia_controller",
+        "Subcategory": "Gameplay:joystick:2",
+        "Description": "Allow animals to spawn",
+        "Keywords": "spawn-animals",
+        "FieldName": "spawn-animals",
+        "InputType": "checkbox",
+        "ParamFieldName": "spawn-animals",
+        "IncludeInCommandLine": false,
+        "DefaultValue": "true",
+        "EnumValues": {
+            "False": "false",
+            "True": "true"
+        }
+    },
+    {
+        "DisplayName": "Spawn NPCs",
+        "Category": "GT New Horizons:stadia_controller",
+        "Subcategory": "Gameplay:joystick:2",
+        "Description": "Allow villagers to spawn",
+        "Keywords": "spawn-npcs",
+        "FieldName": "spawn-npcs",
+        "InputType": "checkbox",
+        "ParamFieldName": "spawn-npcs",
+        "IncludeInCommandLine": false,
+        "DefaultValue": "true",
+        "EnumValues": {
+            "False": "false",
+            "True": "true"
+        }
+    },
+    {
+        "DisplayName": "Spawn Monsters",
+        "Category": "GT New Horizons:stadia_controller",
+        "Subcategory": "Gameplay:joystick:2",
+        "Description": "Allow hostile mobs to spawn",
+        "Keywords": "spawn-monsters",
+        "FieldName": "spawn-monsters",
+        "InputType": "checkbox",
+        "ParamFieldName": "spawn-monsters",
+        "IncludeInCommandLine": false,
+        "DefaultValue": "true",
+        "EnumValues": {
+            "False": "false",
+            "True": "true"
+        }
+    },
+    {
+        "DisplayName": "Spawn Protection Radius",
         "Category": "GT New Horizons:stadia_controller",
         "Subcategory": "Gameplay:joystick:2",
         "Description": "Radius around spawn that non-operators cannot modify. 0 = disabled",
@@ -212,7 +289,7 @@
         "InputType": "number",
         "ParamFieldName": "spawn-protection",
         "IncludeInCommandLine": false,
-        "DefaultValue": "1",
+        "DefaultValue": "0",
         "EnumValues": {},
         "MinValue": "0",
         "Suffix": "blocks"

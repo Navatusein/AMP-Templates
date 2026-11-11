@@ -80,7 +80,7 @@ Set them once per instance in the File Manager: **⋮ → Exclude from backups**
 
 - Exclude: `backups` (ServerUtilities' own backups), `libraries`, `logs`, `crash-reports`,
   `update-logs`, and leftover `.gtnh-*-backup-*` folders.
-- Keep: `World`, `config`, `.gtnh-configs`, `.gtnh-daily-updater.json`, `serverutilities`,
+- Keep: the world folder (**Level Name**, `world` by default), `config`, `.gtnh-configs`, `.gtnh-daily-updater.json`, `serverutilities`,
   `journeymap`, `visualprospecting`, `server.properties` and the player lists (`ops.json`,
   `whitelist.json`, `banned-*.json`, `usercache.json`).
 - `mods` is the largest folder. Excluding it is safe only if, before restoring an older backup,
