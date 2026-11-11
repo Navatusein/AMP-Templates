@@ -4,9 +4,9 @@ D="{{$FullBaseDir}}";
 if ! command -v git >/dev/null 2>&1; then echo "git is required to merge pack config changes but was not found. Aborting"; exit 1; fi;
 if [[ ! -x "$U" ]]; then echo "gtnh-daily-updater is missing. Aborting"; exit 1; fi;
 export GITHUB_TOKEN="{{GithubToken}}";
-# One log per AMP update in <root>/updater/logs; the updater appends its own output, stderr (fatal errors) is teed in.
-mkdir -p "{{$FullRootDir}}updater/logs";
-Log="{{$FullRootDir}}updater/logs/update-$(date +%Y-%m-%d_%H-%M-%S).log";
+# One log per AMP update in <server>/update-logs; the updater appends its own output, stderr (fatal errors) is teed in.
+mkdir -p "{{$FullBaseDir}}update-logs";
+Log="{{$FullBaseDir}}update-logs/update-$(date +%Y-%m-%d_%H-%M-%S).log";
 Tag="{{DailyBuildTag}}";
 echo "AMP update: mode {{PackMode}}, daily build ${Tag:-latest}, mod versions {{ModVersions}}" >> "$Log";
 echo "Update log: $Log";

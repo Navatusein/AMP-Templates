@@ -8,8 +8,8 @@ $env:GITHUB_TOKEN = '{{GithubToken}}';
 $env:GIT_CONFIG_COUNT = '1';
 $env:GIT_CONFIG_KEY_0 = 'core.longpaths';
 $env:GIT_CONFIG_VALUE_0 = 'true';
-# One log per AMP update in <root>\updater\logs; the updater appends its own output, stderr (fatal errors) is copied in.
-$LogDir = Join-Path '{{$FullRootDir}}' 'updater\logs';
+# One log per AMP update in <server>\update-logs; the updater appends its own output, stderr (fatal errors) is copied in.
+$LogDir = Join-Path '{{$FullBaseDir}}' 'update-logs';
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null;
 $Log = Join-Path $LogDir ('update-' + (Get-Date -Format 'yyyy-MM-dd_HH-mm-ss') + '.log');
 $Tag = '{{DailyBuildTag}}';

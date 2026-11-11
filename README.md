@@ -60,7 +60,7 @@ never replaced under a running server.
 - **Pack Mode**, **Initial Config Version** and **Base Server Pack URL** are used only on the first update. To re-initialize, delete `gtnh/server/.gtnh-daily-updater.json`.
 - The config version of the installed pack is saved to `gtnh/initial-config.txt` and used when
   **Initial Config Version** is empty.
-- Every **Update** writes a log to `gtnh/updater/logs/update-<date>_<time>.log`: the full updater
+- Every **Update** writes a log to `gtnh/server/update-logs/update-<date>_<time>.log` (the `update-logs` folder in the AMP File Manager): the full updater
   output with every mod version, changed config files and errors.
 - Config history lives in the git repo `gtnh/server/.gtnh-configs`: each update adds a
   `Snapshot player changes` commit (your edits) and an `Update configs to <version>` merge.
