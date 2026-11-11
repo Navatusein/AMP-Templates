@@ -73,6 +73,21 @@ never replaced under a running server.
   changes the required JVM arguments, copy the new `java9args.txt` from a fresh server pack.
 - Before the first update of a world you care about, take an AMP backup.
 
+#### Backups
+
+AMP 2.8 no longer reads `.backupExclude` files, so the template cannot set backup exclusions.
+Set them once per instance in the File Manager: **⋮ → Exclude from backups**.
+
+- Exclude: `backups` (ServerUtilities' own backups), `libraries`, `logs`, `crash-reports`,
+  `update-logs`, and leftover `.gtnh-*-backup-*` folders.
+- Keep: `World`, `config`, `.gtnh-configs`, `.gtnh-daily-updater.json`, `serverutilities`,
+  `journeymap`, `visualprospecting`, `server.properties` and the player lists (`ops.json`,
+  `whitelist.json`, `banned-*.json`, `usercache.json`).
+- `mods` is the largest folder. Excluding it is safe only if, before restoring an older backup,
+  you set **Daily Build Tag** to that backup's build and run **Update**, so the mods match the world.
+- If you rely on AMP backups, consider turning off ServerUtilities backups
+  (`enable_backups` in `serverutilities/serverutilities.cfg`) to avoid keeping two sets.
+
 ## Editing templates
 
 `*updates.json` files with script stages are generated — do not edit them by hand.
